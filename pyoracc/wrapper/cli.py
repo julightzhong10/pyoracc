@@ -31,8 +31,8 @@ def check_and_process(pathname, atftype, verbose=False):
 @click.option('--atf_type', '-f', type=click.Choice(['cdli', 'oracc']),
               prompt=True, required=True,
               help='Input the atf file type.')
-#@click.option('--segment', '-s', default=False, required=False, is_flag=True,
-#              help='Enables the segmentation of the atf file with error reported per P-number atf.')
+# @click.option('--segment', '-s', default=False, required=False, is_flag=True,
+#              help='Enables the segmentation of the atf file with error.')
 @click.option('-v', '--verbose', default=False, required=False, is_flag=True,
               help='Enables verbose mode.')
 @click.version_option()
@@ -45,7 +45,8 @@ def main(input_path, atf_type, verbose):
                                label='Info: Checking the files') as bar:
             for index, f in enumerate(bar):
                 pathname = os.path.join(input_path, f)
-                process_ids.append(pool.apply_async(check_and_process, (pathname, atf_type, verbose)))
+                process_ids.append(pool.apply_async(
+                    check_and_process, (pathname, atf_type, verbose)))
 
         result = map(lambda x: x.get(), process_ids)
         successes = sum(filter(lambda x: (x == 1), result))
