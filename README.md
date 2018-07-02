@@ -7,7 +7,7 @@ pyoracc
 
 Python tools for working with ORACC/C-ATF files
 
-Depends on PLY, Mako and Pytest
+Depends on PLY, Mako, Multiprocessing and Pytest
 
 # Installation
 
