@@ -6,6 +6,8 @@ from pyoracc.atf.common.atfyacc import AtfParser
 from pyoracc.model.state import State
 from pyoracc.model.text import Text
 
+from pyoracc.model.link_reference import LinkReference
+
 
 class AtfCDLIParser(AtfParser):
     tokens = AtfParser.tokens
@@ -79,3 +81,8 @@ class AtfCDLIParser(AtfParser):
     def p_text_object_surface_broken(self, p):
         """text : text object surface DOLLAR BROKEN QUERY newline"""
         p[0] = p[1]
+
+    def p_linkreference(self, p):
+        """link_reference : link_operator ID
+                        | link_operator ID QUERY"""
+        p[0] = LinkReference(p[1], p[2])
