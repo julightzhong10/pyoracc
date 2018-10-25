@@ -75,3 +75,7 @@ class AtfCDLIParser(AtfParser):
                           | SUMMARY
                           | WITNESSES"""
         p[0] = Milestone(p[1])
+
+    def p_text_object_surface_broken(self, p):
+        """text : text object surface DOLLAR BROKEN QUERY newline"""
+        p[0] = p[1]
