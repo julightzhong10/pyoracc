@@ -50,7 +50,8 @@ class AtfCDLIParser(AtfParser):
         """text_statement : AMPERSAND ID EQUALS ID newline
                             | AMPERSAND ID EQUALS ID QUERY newline
                             | AMPERSAND ID EQUALS ID EQUALS ID newline
-                            | AMPERSAND ID EQUALS ID EQUALS ID EQUALS ID newline"""
+                            | AMPERSAND ID EQUALS ID EQUALS ID EQUALS ID newline
+                            | AMPERSAND ID EQUALS ID STAR newline"""
         p[0] = Text()
         p[0].code = p[2]
         p[0].description = p[4]
