@@ -50,7 +50,7 @@ class MyBuildPy(build_py):
 
 
 setup(name='pyoracc',
-      version='0.2.1',
+      version='0.2.2',
       author='UCL Research IT Services',
       author_email='rc-softdev@ucl.ac.uk',
       description='Python tools for working with ORACC/CDLI ATF files',
