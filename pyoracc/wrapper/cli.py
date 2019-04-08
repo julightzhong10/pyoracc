@@ -1,4 +1,6 @@
 import os
+import time
+
 import click
 from multiprocessing import Pool
 from stat import ST_MODE, S_ISREG
@@ -8,7 +10,7 @@ from pyoracc.wrapper.segment import Segmentor
 from pyoracc.atf.common.atffile import check_atf
 
 
-def check_atf_message(segpathname, atftype, verbose):
+def check_atf_message((segpathname, atftype, verbose)):
     click.echo('\n Info: Parsing {0}.'.format(segpathname))
     try:
         check_atf(segpathname, atftype, verbose)
@@ -33,15 +35,15 @@ def check_and_process(pathname, atftype, segment, verbose=False):
                 outfolder = segmentor.convert()
                 if verbose:
                     click.echo('Info: Segmented into {0}.'.format(outfolder))
-                process_ids = []
-                with click.progressbar(os.listdir(outfolder),
-                                       label='Info: Checking the files') as bar:
-                    for index, f in enumerate(bar):
-                        segpathname = os.path.join(outfolder, f)
-                        process_ids.append(pool.apply(
-                            check_atf_message, (segpathname, atftype, verbose)))
+
+                files = map(lambda f: os.path.join(outfolder, f), os.listdir(outfolder))
+                count_files = len(files)
+                atftypelist = [atftype]*count_files
+                verboselist = [verbose]*count_files
+                pool.map(check_atf_message, zip(files, atftypelist, verboselist))
+                pool.close()
             else:
-                check_atf_message(pathname, atftype, verbose)
+                check_atf_message((pathname, atftype, verbose))
             click.echo('Info: Finished parsing {0}.'.format(pathname))
             return 1
         except (SyntaxError, IndexError, AttributeError,
@@ -59,13 +61,14 @@ def check_and_process(pathname, atftype, segment, verbose=False):
 @click.option('--atf_type', '-f', type=click.Choice(['cdli', 'oracc']),
               prompt=True, required=True,
               help='Input the atf file type.')
-@click.option('--segment_disable', '-s', default=True, required=False, is_flag=True,
+@click.option('--segment', '-s', default=False, required=False, is_flag=True,
               help='Disables the segmentation of the atf file.')
 @click.option('--verbose', '-v', default=False, required=False, is_flag=True,
               help='Enables verbose mode.')
 @click.version_option()
 def main(input_path, atf_type, segment, verbose):
     """My Tool does one work, and one work well."""
+    tsbegin = time.time()
     pool = Pool()
     if os.path.isdir(input_path):
         process_ids = []
@@ -84,3 +87,5 @@ def main(input_path, atf_type, segment, verbose):
                            failures * 100.0 / (failures + successes)))
     else:
         check_and_process(input_path, atf_type, segment, verbose)
+    tsend = time.time()
+    click.echo("Total time taken: {0} minutes)".format((tsend-tsbegin)/60.0))

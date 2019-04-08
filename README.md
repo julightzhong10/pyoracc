@@ -73,7 +73,7 @@ To run it on folder:
 
     $ pyoracc -i ./pyoracc/test/data -f cdli
     
-To disable segmentation (will be slow), use switch -s/--segment_disable:
+To enable segmentation (will be fast), use switch -s/--segment:
 
     $ pyoracc -i ./pyoracc/test/data -f cdli -s
     
