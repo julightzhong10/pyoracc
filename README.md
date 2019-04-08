@@ -72,7 +72,11 @@ To run it on oracc file:
 To run it on folder:
 
     $ pyoracc -i ./pyoracc/test/data -f cdli
+    
+To disable segmentation (will be slow), use switch -s/--segment_disable:
 
+    $ pyoracc -i ./pyoracc/test/data -f cdli -s
+    
 To see the console messages of the tool, use --verbose switch
 
     $ pyoracc -i ./pyoracc/test/data -f cdli --verbose
