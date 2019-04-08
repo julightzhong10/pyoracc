@@ -50,7 +50,7 @@ class MyBuildPy(build_py):
 
 
 setup(name='pyoracc',
-      version='0.1.9',
+      version='0.2.0',
       author='UCL Research IT Services',
       author_email='rc-softdev@ucl.ac.uk',
       description='Python tools for working with ORACC/CDLI ATF files',
@@ -60,6 +60,7 @@ setup(name='pyoracc',
       download_url='https://github.com/ucl/pyoracc/archive/master.tar.gz',
       license='GPLv3',
       packages=find_packages(exclude=["*.test", "*.test.*", "test.*", "test"]),
+      include_package_data=True,
       install_requires=dependencies,
       extras_require={  # Optional
           'dev': extra_dependencies,

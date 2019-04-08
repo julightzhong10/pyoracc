@@ -1,5 +1,8 @@
 from mako.template import Template
 import os
+import pkg_resources
+
+resource_package = __name__  # Could be any module/package name
 
 
 class CDLIText(object):
@@ -12,6 +15,8 @@ ${child.serialize()}
 
     def __init__(self):
         # CDLI Parameters
+        self.ValidPnumbersfilepath = pkg_resources.resource_filename(__name__, 'support_files/ValidPnumbers.txt')
+        self.PnumberMapfilepath = pkg_resources.resource_filename(__name__, 'support_files/PnumberMap.txt')
         self.pList = None
         self.oldPlist = None
         self.newPlist = None
@@ -25,8 +30,7 @@ ${child.serialize()}
 
     # CDLI Methods
     def ReadPnumbers(self):
-        new_path = os.path.relpath('./pyoracc/support_files/ValidPnumbers.txt')
-        pfile = open(new_path, 'r')
+        pfile = open(self.ValidPnumbersfilepath, 'r')
         plist = pfile.readlines()
         pfile.close()
         content = [x.strip() for x in plist]
@@ -38,8 +42,8 @@ ${child.serialize()}
         for pnumber in plist:
             stringBuilder = "P"
             length = len(pnumber)
-            for i in range(1,7-length):
-                stringBuilder = stringBuilder+"0"
+            for i in range(1, 7 - length):
+                stringBuilder = stringBuilder + "0"
 
             stringBuilder = stringBuilder + pnumber
             formatPlist.append(stringBuilder)
@@ -57,7 +61,8 @@ ${child.serialize()}
         temp = []
         oldPlist = []
         newPlist = []
-        with open("./pyoracc/support_files/PnumberMap.txt") as file:
+
+        with open(self.PnumberMapfilepath) as file:
             for line in file:
                 temp = line.split()
                 oldPlist.append(temp[0].strip())
@@ -76,10 +81,10 @@ ${child.serialize()}
 
         if foundMap:
             index = self.oldPlist.index(pnumber)
-            temp = "Replace Old Pnumber : "+pnumber+" with New Pnumber : "+self.newPlist[index]
+            temp = "Replace Old Pnumber : " + pnumber + " with New Pnumber : " + self.newPlist[index]
             return self.newPlist[index], True, temp
         else:
-            if(self.CheckPnumber(pnumber)):
+            if self.CheckPnumber(pnumber):
                 return pnumber, True, None
             else:
                 return pnumber, False, None
