@@ -73,9 +73,9 @@ To run it on folder:
 
     $ pyoracc -i ./pyoracc/test/data -f cdli
     
-To enable segmentation (will be fast), use switch -s/--segment:
+To disable segmentation (will be slow) and to run on whole, use switch -w/--whole:
 
-    $ pyoracc -i ./pyoracc/test/data -f cdli -s
+    $ pyoracc -i ./pyoracc/test/data -f cdli -w
     
 To see the console messages of the tool, use --verbose switch
 

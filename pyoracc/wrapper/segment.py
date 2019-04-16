@@ -12,7 +12,7 @@ OUTPUT_FOLDER = 'segment'+str(ts)
 class Segmentor:
     def __init__(self, inputFile, verbose):
         self.inputFileName = inputFile
-        self.outfolder = os.path.join(os.path.dirname(self.inputFileName),
+        self.outfolder = os.path.join(os.path.dirname(self.inputFileName), "..",
                                       os.path.basename(self.inputFileName)+OUTPUT_FOLDER)
         self.verbose = verbose
         self.__reset__()
@@ -27,6 +27,7 @@ class Segmentor:
         with codecs.open(self.inputFileName, 'r', 'utf-8') as openedFile:
             for (i, line) in enumerate(openedFile):
                 self.__parse(i, line.strip())
+        self.write2file()
         return self.outfolder
 
     def write2file(self):
