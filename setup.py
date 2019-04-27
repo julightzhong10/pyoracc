@@ -23,6 +23,7 @@ from setuptools.command.build_py import build_py
 # To use a consistent encoding
 from codecs import open
 from os import path
+import sys
 
 here = path.abspath(path.dirname(__file__))
 
@@ -30,7 +31,13 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-dependencies = ['click', 'mako', 'ply', 'multiprocessing']
+
+
+dependencies = ['click', 'mako', 'ply', 'multiprocessing'] 
+if sys.version_info.major==3:
+    dependencies = ['click', 'mako', 'ply'] # mutiprocessing is a internal tool in python3, installation will cause error
+    sys.exit("Sorry, Python 3 is not supported (yet)")
+
 
 extra_dependencies = ['pytest', 'pytest-cov', 'codecov', 'pycodestyle']
 
@@ -50,7 +57,7 @@ class MyBuildPy(build_py):
 
 
 setup(name='pyoracc',
-      version='0.2.3',
+      version='0.2.4',
       author='UCL Research IT Services',
       author_email='rc-softdev@ucl.ac.uk',
       description='Python tools for working with ORACC/CDLI ATF files',

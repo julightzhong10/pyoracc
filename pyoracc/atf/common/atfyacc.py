@@ -36,12 +36,15 @@ from pyoracc.model.score import Score
 from pyoracc.model.state import State
 from pyoracc.model.text import Text
 from pyoracc.model.translation import Translation
-
+from pyoracc.tools.logtemplate import LogTemplate
 
 class AtfParser(object):
     tokens = AtfLexicon.TOKENS
 
-    def __init__(self, debug=0, log=yacc.NullLogger()):
+    def __init__(self, debug=0, skip=False, log=yacc.NullLogger()):
+        self.skip=skip
+        self.errors=[] #error list
+        self.log_tmp=LogTemplate()
         self.parser = yacc.yacc(module=self, tabmodule='pyoracc.atf.parsetab',
                                 debug=debug, debuglog=log)
 
@@ -825,16 +828,18 @@ class AtfParser(object):
     )
 
     def p_error(self, p):
-        formatstring = u"PyOracc could not parse token {} at line {} at " \
-                       u"offset {} with value '{}'.".format(p.type,
-                                                            p.lineno,
-                                                            p.lexpos, p.value)
-        valuestring = p.value
-        if _pyversion() == 2:
-            valuestring = valuestring.encode('UTF-8')
-            formatstring = formatstring.encode('UTF-8')
-        raise SyntaxError(formatstring,
-                          (None, p.lineno, p.lexpos, valuestring))
+        if self.skip:
+            self.errors.append((p.value[0],p.lineno, p.lexpos, p.type))
+            while True:
+                tok = self.parser.token() # Get the next token  
+                if not tok or tok.type == 'NEWLINE': 
+                    break
+            return
+        else:
+            error_mesg=self.log_tmp.yacc_default(p.value[0],p.lineno, p.lexpos, p.type) 
+            raise SyntaxError(error_mesg)
+        
+        
         # All errors currently unrecoverable
         # So just throw
         # Add list of params so PyORACC users can build their own error msgs.

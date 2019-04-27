@@ -44,23 +44,22 @@ log.addHandler(consoleHandler)
 
 class AtfFile(object):
     template = Template("${text.serialize()}")
-
-    def __init__(self, content, atftype='oracc', debug=False):
-        skipinvalid = False
+    def __init__(self, content, atftype='oracc', debug=False,skip=False):
         if content[-1] != '\n':
             content += "\n"
         if atftype == 'cdli':
-            lexer = AtfCDLILexer(debug=debug, skipinvalid=skipinvalid,
-                                 log=log).lexer
-            parser = AtfCDLIParser(debug=debug, log=log).parser
+            atflexer=AtfCDLILexer(debug=debug, skip=skip,log=log)
+            atfparser=AtfCDLIParser(debug=debug, skip=skip,log=log)
         elif atftype == 'oracc':
-            lexer = AtfOraccLexer(debug=debug, skipinvalid=skipinvalid,
-                                  log=log).lexer
-            parser = AtfOraccParser(debug=debug, log=log).parser
+            atflexer=AtfOraccLexer(debug=debug, skip=skip,log=log)
+            atfparser=AtfOraccParser(debug=debug, skip=skip,log=log) 
         else:
-            lexer = AtfLexer(debug=debug, skipinvalid=skipinvalid,
-                             log=log).lexer
-            parser = AtfParser(debug=debug, log=log).parser
+            atflexer=AtfLexer(debug=debug, skip=skip,log=log)
+            atfparser=AtfParser(debug=debug, skip=skip,log=log) 
+        lexer = atflexer.lexer
+        parser = atfparser.parser
+        self.errors_lex=atflexer.errors 
+        self.errors_yacc=atfparser.errors 
         if debug:
             self.text = parser.parse(content, lexer=lexer, debug=log)
         else:
@@ -73,10 +72,13 @@ class AtfFile(object):
         return AtfFile.template.render_unicode(**vars(self))
 
 
-def check_atf(infile, atftype, verbose=False):
+def check_atf(infile, atftype, verbose=False,skip=False):
     content = codecs.open(infile,
                           encoding='utf-8-sig').read()
-    AtfFile(content, atftype, verbose)
+    atffile=AtfFile(content, atftype, verbose,skip)
+    errors_lex=atffile.errors_lex
+    errors_yacc=atffile.errors_yacc
+    return errors_lex,errors_yacc
 
 
 if __name__ == "__main__":

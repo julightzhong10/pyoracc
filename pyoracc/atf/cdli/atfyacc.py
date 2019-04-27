@@ -1,8 +1,7 @@
 from pyoracc.model.milestone import Milestone
-
+from pyoracc import _pyversion
 from pyoracc.model.oraccobject import OraccObject
 from pyoracc.model.oraccnamedobject import OraccNamedObject
-
 from pyoracc.atf.common.atfyacc import AtfParser
 from pyoracc.model.state import State
 from pyoracc.model.text import Text
@@ -17,11 +16,12 @@ objStructure = Structure()
 
 
 class AtfCDLIParser(AtfParser):
+    
     tokens = AtfParser.tokens
     precedence = AtfParser.precedence
 
-    def __init__(self, debug, log):
-        super(AtfCDLIParser, self).__init__(debug, log)
+    def __init__(self, debug,skip, log):
+        super(AtfCDLIParser, self).__init__(debug, skip,log)
 
     def p_document(self, p):
         """document : text
@@ -47,7 +47,7 @@ class AtfCDLIParser(AtfParser):
                                    | DOLLAR state newline
                                    | DOLLAR REFERENCE ID newline"""
         # print(p[2])
-        p[0] = State(p[2])
+        p[0] = State(p[2])    
 
     # to remove later
     def p_version_protoocol(self, p):

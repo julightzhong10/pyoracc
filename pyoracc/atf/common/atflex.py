@@ -25,9 +25,11 @@ import re
 import warnings
 from pyoracc import _pyversion
 from pyoracc.atf.common.atflexicon import AtfLexicon
+from pyoracc.tools.logtemplate import LogTemplate
 
 
 class AtfLexer(object):
+
 
     def _keyword_dict(self, tokens, extra):
         keywords = {token.lower(): token for token in tokens}
@@ -140,7 +142,7 @@ class AtfLexer(object):
             t.lexer.push_state('nonequals')
 
         if t.type == "END":
-            if not self.skipinvalid or t.lexer.current_state() != 'INITIAL':
+            if not self.skip or t.lexer.current_state() != 'INITIAL':
                 t.lexer.pop_state()
             t.lexer.push_state('transctrl')
 
@@ -157,17 +159,14 @@ class AtfLexer(object):
         if t.type in AtfLexer.long_argument_structures + ["NOTE"]:
             t.lexer.push_state('flagged')
         if t.type is None:
-            formatstring = u"Illegal @STRING '{}'".format(t.value)
-            valuestring = t.value
-            if _pyversion() == 2:
-                formatstring = formatstring.encode('UTF-8')
-                valuestring = valuestring.encode('UTF-8')
-            if self.skipinvalid:
-                warnings.warn(formatstring, UserWarning)
+            if self.skip:
+                t.lexer.skip(1)
+                self.errors.append((t.value[0], t.lineno, t.lexpos))
                 return
             else:
-                raise SyntaxError(formatstring,
-                                  (None, t.lineno, t.lexpos, valuestring))
+                raise SyntaxError(
+                        self.log_tmp.lex_default(t.value[0], 
+                                                t.lineno, t.lexpos))
         return t
 
     def t_labeled_OPENR(self, t):
@@ -199,17 +198,14 @@ class AtfLexer(object):
         if t.type == "NOTE":
             t.lexer.push_state('para')
         if t.type is None:
-            formatstring = u"Illegal #STRING '{}'".format(t.value)
-            valuestring = t.value
-            if _pyversion() == 2:
-                formatstring = formatstring.encode('UTF-8')
-                valuestring = valuestring.encode('UTF-8')
-            if self.skipinvalid:
-                warnings.warn(formatstring, UserWarning)
+            if self.skip:
+                t.lexer.skip(1)
+                self.errors.append((t.value[0], t.lineno, t.lexpos))
                 return
             else:
-                raise SyntaxError(formatstring,
-                                  (None, t.lineno, t.lexpos, valuestring))
+                raise SyntaxError(
+                        self.log_tmp.lex_default(t.value[0], 
+                                                t.lineno, t.lexpos))
         return t
 
     def t_LINELABEL(self, t):
@@ -467,22 +463,18 @@ class AtfLexer(object):
 
     # Error handling rule
     def t_ANY_error(self, t):
-        fstring = u"PyOracc got an illegal character " \
-                  u"'{}' at line number '{}' at lex pos '{}'" \
-            .format(t.value, t.lineno, t.lexpos)
-        valuestring = t.value
-        if _pyversion() == 2:
-            fstring = fstring.encode('UTF-8')
-            valuestring = valuestring.encode('UTF-8')
-        if self.skipinvalid:
+        if self.skip:
             t.lexer.skip(1)
-            warnings.warn(fstring, UserWarning)
+            self.errors.append((t.value[0], t.lineno, t.lexpos))
             return
         else:
-            raise SyntaxError(fstring,
-                              (None, t.lineno, t.lexpos, valuestring))
+            raise SyntaxError(
+                self.log_tmp.lex_default(t.value[0], 
+                                                t.lineno, t.lexpos))
 
-    def __init__(self, skipinvalid=False, debug=0, log=lex.NullLogger()):
-        self.skipinvalid = skipinvalid
+    def __init__(self, skip=False, debug=0, log=lex.NullLogger()):
+        self.skip = skip
+        self.errors=[] #error list
+        self.log_tmp=LogTemplate()
         self.lexer = lex.lex(module=self, reflags=re.MULTILINE, debug=debug,
                              debuglog=log)
