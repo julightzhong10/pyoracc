@@ -6,7 +6,7 @@ class LogTemplate(object):
      # common error message head
     
     def __init__(self):
-        self.head_tmp_default= u"PyOracc Error: ATF_ID: {}, Path: {}"
+        self.head_tmp_default= u"[{}] PyOracc Error: ATF_ID: {}, Path: {}"
         self.yacc_tmp_default= u"YACC Error: can't parse tocken '{}', (line {}, offset {}, tokenType {}) "
         self.lex_tmp_default= u"LEX Error: can't identify char '{}', (line {}, offset {}) "
         self.wrong_logpath_tmp= u"PyOracc Error: Wrong path to place the log file. {} "
@@ -14,8 +14,8 @@ class LogTemplate(object):
         self.summary_end_tmp= u"PyOracc Info: Finished parsing {0}."
         self.raise_tmp= u"PyOracc failed with message: {0} in {1}"
 
-    def head_default(self,ID,path):
-        mesg = self.head_tmp_default.format(ID,path)
+    def head_default(self,idx,ID,path):
+        mesg = self.head_tmp_default.format(idx,ID,path)
         mesg = mesg.encode('UTF-8') if _pyversion()==2 else mesg
         return mesg
 

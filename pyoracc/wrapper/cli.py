@@ -16,11 +16,13 @@ def output_error(error_list, summary, pathname, whole, summary_str):
     if len(summary) > 0 and os.path.isdir(summary) and (not whole):
         summary = summary if summary[-1]=='/' else summary+'/'
         file = open(summary+"PyOracc.log", "w+")
+        error_idx=0
         for error in error_list:
             if ( len(error[0]) + len(error[1]) ) > 0:
-                head_str = log_tmp.head_default(error[2],error[3])
+                head_str = log_tmp.head_default(error_idx,error[2],error[3])
                 click.echo(head_str)
                 file.write(head_str + '\n')
+                error_idx+=1
             for lex_err in error[0]:
                 lex_str = " "*6 + log_tmp.lex_default(lex_err[0],lex_err[1],lex_err[2])
                 click.echo(lex_str)
@@ -32,10 +34,12 @@ def output_error(error_list, summary, pathname, whole, summary_str):
         file.write(summary_str)
         file.close()
     else:
+        error_idx=0
         for error in error_list:
             if ( len(error[0]) + len(error[1]) ) > 0:
-                head_str = log_tmp.head_default(error[2],error[3])
+                head_str = log_tmp.head_default(error_idx,error[2],error[3])
                 click.echo(head_str)
+                error_idx+=1
             for lex_err in error[0]:
                 lex_str = " "*6 + log_tmp.lex_default(lex_err[0],lex_err[1],lex_err[2])
                 click.echo(lex_str)
