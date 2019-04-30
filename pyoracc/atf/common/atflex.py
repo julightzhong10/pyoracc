@@ -159,13 +159,14 @@ class AtfLexer(object):
         if t.type in AtfLexer.long_argument_structures + ["NOTE"]:
             t.lexer.push_state('flagged')
         if t.type is None:
+            wrong_value=t.value[0]
             if self.skip:
                 t.lexer.skip(1)
-                self.errors.append((t.value[0], t.lineno, t.lexpos))
+                self.errors.append((wrong_value, t.lineno, t.lexpos))
                 return
             else:
                 raise SyntaxError(
-                        self.log_tmp.lex_default(t.value[0], 
+                        self.log_tmp.lex_default(wrong_value, 
                                                 t.lineno, t.lexpos))
         return t
 
@@ -198,13 +199,14 @@ class AtfLexer(object):
         if t.type == "NOTE":
             t.lexer.push_state('para')
         if t.type is None:
+            wrong_value=t.value[0]
             if self.skip:
                 t.lexer.skip(1)
-                self.errors.append((t.value[0], t.lineno, t.lexpos))
+                self.errors.append((wrong_value, t.lineno, t.lexpos))
                 return
             else:
                 raise SyntaxError(
-                        self.log_tmp.lex_default(t.value[0], 
+                        self.log_tmp.lex_default(wrong_value, 
                                                 t.lineno, t.lexpos))
         return t
 
@@ -463,13 +465,14 @@ class AtfLexer(object):
 
     # Error handling rule
     def t_ANY_error(self, t):
+        wrong_value=t.value[0]
         if self.skip:
             t.lexer.skip(1)
-            self.errors.append((t.value[0], t.lineno, t.lexpos))
+            self.errors.append((wrong_value, t.lineno, t.lexpos))
             return
         else:
             raise SyntaxError(
-                self.log_tmp.lex_default(t.value[0], 
+                self.log_tmp.lex_default(wrong_value, 
                                                 t.lineno, t.lexpos))
 
     def __init__(self, skip=False, debug=0, log=lex.NullLogger()):

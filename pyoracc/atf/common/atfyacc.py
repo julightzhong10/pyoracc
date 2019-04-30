@@ -37,7 +37,6 @@ from pyoracc.model.state import State
 from pyoracc.model.text import Text
 from pyoracc.model.translation import Translation
 from pyoracc.tools.logtemplate import LogTemplate
-
 class AtfParser(object):
     tokens = AtfLexicon.TOKENS
 
@@ -828,15 +827,16 @@ class AtfParser(object):
     )
 
     def p_error(self, p):
+        wrong_value=p.value[0]
         if self.skip:
-            self.errors.append((p.value[0],p.lineno, p.lexpos, p.type))
+            self.errors.append((wrong_value,p.lineno, p.lexpos, p.type))
             while True:
                 tok = self.parser.token() # Get the next token  
                 if not tok or tok.type == 'NEWLINE': 
                     break
             return
         else:
-            error_mesg=self.log_tmp.yacc_default(p.value[0],p.lineno, p.lexpos, p.type) 
+            error_mesg=self.log_tmp.yacc_default(wrong_value,p.lineno, p.lexpos, p.type) 
             raise SyntaxError(error_mesg)
         
         

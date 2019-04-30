@@ -1,6 +1,6 @@
 import os
 import time
-
+import codecs
 import click
 from multiprocessing import Pool
 from stat import ST_MODE, S_ISREG
@@ -9,13 +9,12 @@ from pyoracc.wrapper.segment import Segmentor
 
 from pyoracc.atf.common.atffile import check_atf
 from pyoracc.tools.logtemplate import LogTemplate
-
 log_tmp=LogTemplate()
 
 def output_error(error_list, summary, pathname, whole, summary_str):
     if len(summary) > 0 and os.path.isdir(summary) and (not whole):
         summary = summary if summary[-1]=='/' else summary+'/'
-        file = open(summary+"PyOracc.log", "w+")
+        file = open(summary+"PyOracc.log", "a+")
         error_idx=0
         for error in error_list:
             if ( len(error[0]) + len(error[1]) ) > 0:
@@ -24,14 +23,14 @@ def output_error(error_list, summary, pathname, whole, summary_str):
                 file.write(head_str + '\n')
                 error_idx+=1
             for lex_err in error[0]:
-                lex_str = " "*6 + log_tmp.lex_default(lex_err[0],lex_err[1],lex_err[2])
+                lex_str = (" "*6 + log_tmp.lex_default(lex_err[0],lex_err[1],lex_err[2]))#.encode('utf-8')
                 click.echo(lex_str)
                 file.write(lex_str + '\n')
             for yacc_err in error[1]:
-                yacc_str = " "*6 + log_tmp.yacc_default(yacc_err[0],yacc_err[1],yacc_err[2],yacc_err[3])
+                yacc_str = (" "*6 + log_tmp.yacc_default(yacc_err[0],yacc_err[1],yacc_err[2],yacc_err[3]))#.encode('utf-8')
                 click.echo(yacc_str)
                 file.write(yacc_str + '\n')
-        file.write(summary_str)
+        file.write(summary_str + '\n')
         file.close()
     else:
         error_idx=0
@@ -52,7 +51,7 @@ def output_error(error_list, summary, pathname, whole, summary_str):
 
 
 def check_atf_message((segpathname, atftype, verbose,skip)): # this tuple parameters format no longer support in python3
-    click.echo('\n Info: Parsing {0}.'.format(segpathname))
+    # click.echo('\n Info: Parsing {0}.'.format(segpathname))
     errors_lex,errors_yacc = check_atf(segpathname, atftype, verbose,skip)
     atf_id = (segpathname.split('/')[-1]).split('.')[0] # extract atf_id(e.g. P136211) 
     return (errors_lex,errors_yacc,atf_id,segpathname)
