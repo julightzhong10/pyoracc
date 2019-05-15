@@ -16,7 +16,7 @@ class GrammarCheck(object):
 
 
     def print_test(self):
-        self.structure_check(0)
+        self.structure_check()
         print('----(GrammarCheck----')
         print(self.ids)
         print(self.lans)
@@ -82,14 +82,25 @@ class GrammarCheck(object):
         add line number of dollar comments line (e.g. $ blank space) to the self.dollars
         '''
         self.dollars.append(dollar)
-    
-    def structure_check(self,):
+
+
+
+    def structure_check(self):
         '''
         :return: N/A
 
-        check different rules and append error message to self.error
+        check different rules and append error message to self.error_str
         '''
-        
+
+        '''check the order of ID, language, and object'''
+        if len(self.ids)==1 and len(self.lans)==1 and len(self.objs)==1:
+            if self.ids[0]!=1:
+                self.errors_str.append(u"PyOracc Error at line {}. ID line (e.g. &P123456 = AB 78, 910)should always be at the 2nd line of an ATF section.".format(self.orig_line+self.ids[0]))
+            if self.lans[0]!=2:
+                self.errors_str.append(u"PyOracc Error at line {}: Language Line (e.g. \# atf: lang) should be at the 2nd line of an ATF section. ".format(self.orig_line+self.lans[0]))
+            if self.objs[0]!=3:
+                self.errors_str.append(u"PyOracc Error at line {}: Artifact Type line (e.g. @tablet) should always be at the 3rd line of an ATF section.".format(self.orig_line+self.objs[0]))
+    
         '''check ID line'''
         if len(self.ids)<1:
             self.errors_str.append(u"PyOracc Error: First line of a text should always start with like \"&P123456 = AB 78, 910\"")
@@ -124,5 +135,6 @@ class GrammarCheck(object):
         if len(self.dollars)<1 and len(self.surfaces)<1 and len(self.trans)<1:
             self.errors_str.append(u"PyOracc Error: at least 1 dollar comment line (e.g. $ blank space) or 1 surface line (e.g. @column 2) with 1 transliterration line (e.g. 1. dub-sar)")
         
-        '''check surface and transliterration sequence'''
-        for i in range(len(self.))
+        '''check surface and transliterration sequence (to be done)'''
+
+
