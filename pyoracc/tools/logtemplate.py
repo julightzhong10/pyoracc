@@ -7,8 +7,8 @@ class LogTemplate(object):
     
     def __init__(self):
         self.head_tmp_default= u"[{}] PyOracc Error: ATF_ID: {}, Path: {}"
-        self.yacc_tmp_default= u"YACC Error: can't parse tocken '{}', (line {}, offset {}, tokenType {}) "
-        self.lex_tmp_default= u"LEX Error: can't identify char '{}', (line {}, offset {}) "
+        self.yacc_tmp_default= u"Can't parse token '{}', (line {}, column {}, tokenType {}) "
+        self.lex_tmp_default= u"Can't identify token '{}' starting (line {}, column {}) "
         self.wrong_logpath_tmp= u"PyOracc Error: Wrong path to place the log file. {} "
         self.summary_num_tmp= u"PyOracc Summary: {} LEX error(s), {} YACC error(s) in {}."
         self.summary_end_tmp= u"PyOracc Info: Finished parsing {0}."

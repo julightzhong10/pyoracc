@@ -59,11 +59,12 @@ class AtfFile(object):
         lexer = atflexer.lexer
         parser = atfparser.parser
         self.errors_lex=atflexer.errors 
-        self.errors_yacc=atfparser.errors 
+        self.errors_yacc=atfparser.errors
         if debug:
             self.text = parser.parse(content, lexer=lexer, debug=log)
         else:
             self.text = parser.parse(content, lexer=lexer)
+        print(atfparser.g_check.print_test())
 
     def __str__(self):
         return AtfFile.template.render_unicode(**vars(self))

@@ -82,8 +82,9 @@ class AtfLexer(object):
     t_TO = "\>\>"
     t_COMMA = "\,"
     t_PARBAR = "\|\|"
-
     t_INITIAL_transctrl_PARENTHETICALID = "\([^\n\r]*\)"
+
+    
 
     def t_INITIAL_transctrl_WHITESPACE(self, t):
         r'[\t ]+'
@@ -120,6 +121,7 @@ class AtfLexer(object):
     def t_NEWLINE(self, t):
         r'\s*[\n\r]'
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         return t
 
     def t_INITIAL_parallel_labeled_ATID(self, t):
@@ -159,15 +161,19 @@ class AtfLexer(object):
         if t.type in AtfLexer.long_argument_structures + ["NOTE"]:
             t.lexer.push_state('flagged')
         if t.type is None:
-            wrong_value=t.value[0]
+            wrong_value=''
+            for value in t.value:
+                if value.isspace():
+                    break
+                wrong_value += value
             if self.skip:
                 t.lexer.skip(1)
-                self.errors.append((wrong_value, t.lineno, t.lexpos))
+                self.errors.append((wrong_value, t.lineno, t.lexpos-self.cur_pos))
                 return
             else:
                 raise SyntaxError(
                         self.log_tmp.lex_default(wrong_value, 
-                                                t.lineno, t.lexpos))
+                                                t.lineno, t.lexpos-self.cur_pos))
         return t
 
     def t_labeled_OPENR(self, t):
@@ -199,15 +205,20 @@ class AtfLexer(object):
         if t.type == "NOTE":
             t.lexer.push_state('para')
         if t.type is None:
-            wrong_value=t.value[0]
+            t.lexer.lineno += t.value.count("\n")
+            wrong_value=''
+            for value in t.value:
+                if value.isspace():
+                    break
+                wrong_value += value
             if self.skip:
                 t.lexer.skip(1)
-                self.errors.append((wrong_value, t.lineno, t.lexpos))
+                self.errors.append((wrong_value, t.lineno, t.lexpos-self.cur_pos))
                 return
             else:
                 raise SyntaxError(
                         self.log_tmp.lex_default(wrong_value, 
-                                                t.lineno, t.lexpos))
+                                                t.lineno, t.lexpos-self.cur_pos))
         return t
 
     def t_LINELABEL(self, t):
@@ -256,6 +267,7 @@ class AtfLexer(object):
     def t_flagged_text_lemmatize_transctrl_nonequals_absorb_NEWLINE(self, t):
         r'[\n\r]*\s*[\n\r]+'
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         t.lexer.pop_state()
         return t
 
@@ -325,6 +337,7 @@ class AtfLexer(object):
     def t_parallel_NEWLINE(self, t):
         r'\s*[\n\r](?![ \t])'
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         return t
 
     # In interlinear states, a newline which is not continuation leaves state
@@ -332,6 +345,7 @@ class AtfLexer(object):
     def t_interlinear_NEWLINE(self, t):
         r'\s*[\n\r](?![ \t])'
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         t.lexer.pop_state()
         return t
 
@@ -340,6 +354,7 @@ class AtfLexer(object):
     def t_labeled_NEWLINE(self, t):
         r'\s*[\n\r]'
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         return t
 
     # Flag characters (#! etc ) don't apply in translations
@@ -413,6 +428,7 @@ class AtfLexer(object):
                terminates_para + ')))+')
     def t_para_ID(self, t):
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         t.value = t.value.strip()
         return t
 
@@ -420,6 +436,7 @@ class AtfLexer(object):
     def t_para_NEWLINE(self, t):
         r'\r?\n\s*[\n\r]*\n'
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         t.lexer.pop_state()
         return t
 
@@ -432,6 +449,7 @@ class AtfLexer(object):
     @lex.TOKEN(r'\r?\n(?=' + terminates_para + ')')
     def t_para_MAGICNEWLINE(self, t):
         t.lexer.lineno += t.value.count("\n")
+        self.cur_pos = t.lexpos
         t.lexer.pop_state()
         t.type = "NEWLINE"
         return t
@@ -465,19 +483,25 @@ class AtfLexer(object):
 
     # Error handling rule
     def t_ANY_error(self, t):
-        wrong_value=t.value[0]
+        wrong_value=''
+        for value in t.value:
+            if value.isspace():
+                break
+            wrong_value += value
+        # print(t.value)
         if self.skip:
             t.lexer.skip(1)
-            self.errors.append((wrong_value, t.lineno, t.lexpos))
+            self.errors.append((wrong_value, t.lineno, t.lexpos-self.cur_pos))
             return
         else:
             raise SyntaxError(
                 self.log_tmp.lex_default(wrong_value, 
-                                                t.lineno, t.lexpos))
+                                                t.lineno, t.lexpos-self.cur_pos))
 
     def __init__(self, skip=False, debug=0, log=lex.NullLogger()):
         self.skip = skip
-        self.errors=[] #error list
-        self.log_tmp=LogTemplate()
+        self.errors = [] #error list
+        self.log_tmp = LogTemplate()
         self.lexer = lex.lex(module=self, reflags=re.MULTILINE, debug=debug,
                              debuglog=log)
+        self.cur_pos = 0

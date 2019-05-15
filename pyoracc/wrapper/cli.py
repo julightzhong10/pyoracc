@@ -11,23 +11,27 @@ from pyoracc.atf.common.atffile import check_atf
 from pyoracc.tools.logtemplate import LogTemplate
 log_tmp=LogTemplate()
 
-def output_error(error_list, summary, pathname, whole, summary_str):
+def output_error(error_list, summary, pathname, whole, summary_str,orig_map):
     if len(summary) > 0 and os.path.isdir(summary) and (not whole):
         summary = summary if summary[-1]=='/' else summary+'/'
         file = open(summary+"PyOracc.log", "a+")
         error_idx=0
+        # error:tuple (lex_errors:list, yacc_errors:list, atf_id, segpathname)
         for error in error_list:
+            pos_renew=orig_map[error[2]] if (error[2] in orig_map) else 0
             if ( len(error[0]) + len(error[1]) ) > 0:
                 head_str = log_tmp.head_default(error_idx,error[2],error[3])
                 click.echo(head_str)
                 file.write(head_str + '\n')
                 error_idx+=1
+            # lex_err: tuple (wrong_value, t.lineno, t.lexpos)
             for lex_err in error[0]:
-                lex_str = (" "*6 + log_tmp.lex_default(lex_err[0],lex_err[1],lex_err[2]))#.encode('utf-8')
+                lex_str = (" "*6 + log_tmp.lex_default(lex_err[0],pos_renew+lex_err[1],lex_err[2]))#.encode('utf-8')
                 click.echo(lex_str)
                 file.write(lex_str + '\n')
+            # yacc_err: tuple (wrong_value,p.lineno, p.lexpos, p.type)
             for yacc_err in error[1]:
-                yacc_str = (" "*6 + log_tmp.yacc_default(yacc_err[0],yacc_err[1],yacc_err[2],yacc_err[3]))#.encode('utf-8')
+                yacc_str = (" "*6 + log_tmp.yacc_default(yacc_err[0],pos_renew+yacc_err[1],yacc_err[2],yacc_err[3]))#.encode('utf-8')
                 click.echo(yacc_str)
                 file.write(yacc_str + '\n')
         file.write(summary_str + '\n')
@@ -35,15 +39,16 @@ def output_error(error_list, summary, pathname, whole, summary_str):
     else:
         error_idx=0
         for error in error_list:
+            pos_renew=orig_map[error[2]] if (error[2] in orig_map) else 0
             if ( len(error[0]) + len(error[1]) ) > 0:
                 head_str = log_tmp.head_default(error_idx,error[2],error[3])
                 click.echo(head_str)
                 error_idx+=1
             for lex_err in error[0]:
-                lex_str = " "*6 + log_tmp.lex_default(lex_err[0],lex_err[1],lex_err[2])
+                lex_str = " "*6 + log_tmp.lex_default(lex_err[0],pos_renew+lex_err[1],lex_err[2])
                 click.echo(lex_str)
             for yacc_err in error[1]:
-                yacc_str = " "*6 + log_tmp.yacc_default(yacc_err[0],yacc_err[1],yacc_err[2],yacc_err[3])
+                yacc_str = " "*6 + log_tmp.yacc_default(yacc_err[0],pos_renew+yacc_err[1],yacc_err[2],yacc_err[3])
                 click.echo(yacc_str)
         if not os.path.isdir(summary) and (not whole):
             click.echo(log_tmp.wrong_path(summary))
@@ -91,7 +96,7 @@ def check_and_process(pathname,summary,atftype, whole, verbose=False):
             if (lex_error_num + yacc_error_num) == 0:
                 click.echo(summary_str)
             else:
-                output_error(error_list,summary,pathname,whole,summary_str)
+                output_error(error_list,summary,pathname,whole,summary_str,segmentor.col_map)
             click.echo(log_tmp.summary_end(pathname))
             return 1
         except (SyntaxError, IndexError, AttributeError,
